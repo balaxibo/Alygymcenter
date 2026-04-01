@@ -192,15 +192,15 @@ function setActiveTab(tabId) {
   if (el) el.style.display = 'block';
   
   // cập nhật button styles
-  document.querySelectorAll('.tabs button').forEach(btn => {
-    btn.classList.remove('bg-blue-700', 'text-white');
-    btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('bg-gradient-to-r', 'from-blue-600', 'to-blue-700', 'text-white', 'shadow-md');
+    btn.classList.add('bg-gray-100', 'text-gray-700', 'shadow');
   });
   
-  const activeButton = document.querySelector(`.tabs button[onclick="setActiveTab('${tabId}')"]`);
+  const activeButton = document.querySelector(`.tab-btn[onclick="setActiveTab('${tabId}')"]`);
   if (activeButton) {
-    activeButton.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300');
-    activeButton.classList.add('bg-blue-700', 'text-white');
+    activeButton.classList.remove('bg-gray-100', 'text-gray-700', 'shadow');
+    activeButton.classList.add('bg-gradient-to-r', 'from-blue-600', 'to-blue-700', 'text-white', 'shadow-md');
   }
   
   // Load data cho các tab đặc biệt

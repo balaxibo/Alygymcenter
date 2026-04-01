@@ -37,14 +37,20 @@ async function loadData() {
     
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error);
-    showToast('Không thể tải dữ liệu. Vui lòng tải lại trang.', 'error');
     
-    // Fallback: dùng dữ liệu rỗng để UI vẫn hoạt động
-    packages = [];
-    ptList = [];
+    // Sử dụng fallback data khi API không hoạt động
+    console.log('Sử dụng fallback data do API không khả dụng');
+    packages = [
+      ...FALLBACK_DATA.packages.NonPT,
+      ...FALLBACK_DATA.packages.PT
+    ];
+    ptList = FALLBACK_DATA.ptList;
+    
     updatePackageOptions();
     updateRenewPackageOptions();
     updatePTOptions();
+    
+    showToast('API không khả dụng, đang sử dụng dữ liệu mẫu', 'warning');
   } finally {
     showGlobalLoading(false);
   }

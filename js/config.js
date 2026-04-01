@@ -16,6 +16,27 @@ const API_CONFIG = {
   MAX_RETRIES: 3
 };
 
+// Fallback data khi API không hoạt động
+const FALLBACK_DATA = {
+  packages: {
+    NonPT: [
+      { code: 'GYM001', sessions: 10, price: 1500000, type: 'Gym_NonPT' },
+      { code: 'GYM002', sessions: 20, price: 2500000, type: 'Gym_NonPT' },
+      { code: 'GYM003', sessions: 30, price: 3500000, type: 'Gym_NonPT' }
+    ],
+    PT: [
+      { code: 'PT1:1-001', sessions: 10, price: 5000000, type: 'Gym_PT' },
+      { code: 'PT1:1-002', sessions: 20, price: 9000000, type: 'Gym_PT' },
+      { code: 'PT2:1-001', sessions: 10, price: 3000000, type: 'Gym_PT' }
+    ]
+  },
+  ptList: [
+    { code: 'PT001', name: 'Nguyễn Văn A' },
+    { code: 'PT002', name: 'Trần Thị B' },
+    { code: 'PT003', name: 'Lê Văn C' }
+  ]
+};
+
 /**
  * Hàm gọi API đến backend GAS
  * @param {string} action - Tên action cần gọi
