@@ -7,7 +7,7 @@
 const API_CONFIG = {
   // URL của Google Apps Script Web App
   // Thay đổi URL này khi deploy backend
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbxCSOezOkWBhBNnqYkM7JnVrQT9ktaJw1u-AKJUSmGafVizCSjEQQoWOSp7BR_2HIsokA/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbztJtL3budhNOBIMeIEopWlag3y8p0L1PyY9rYOSccTXi8aAuT6VmYiU_jFOVWJ3kurZA/exec',
   
   // Timeout cho request (ms)
   TIMEOUT: 30000,

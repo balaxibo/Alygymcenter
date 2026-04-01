@@ -41,10 +41,10 @@ async function loadData() {
     // Sử dụng fallback data khi API không hoạt động
     console.log('Sử dụng fallback data do API không khả dụng');
     packages = [
-      ...FALLBACK_DATA.packages.NonPT,
-      ...FALLBACK_DATA.packages.PT
+      ...window.FALLBACK_DATA.packages.NonPT,
+      ...window.FALLBACK_DATA.packages.PT
     ];
-    ptList = FALLBACK_DATA.ptList;
+    ptList = window.FALLBACK_DATA.ptList;
     
     updatePackageOptions();
     updateRenewPackageOptions();
