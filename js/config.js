@@ -7,7 +7,7 @@
 const API_CONFIG = {
   // URL của Google Apps Script Web App
   // Thay đổi URL này khi deploy backend
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbw7wEWG_YyP_T2ctzgG7GgyQ77r1oVc0vt2ygd0Ct15FRgEtYDqkjG5d30VlIK7_K04NQ/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbxCSOezOkWBhBNnqYkM7JnVrQT9ktaJw1u-AKJUSmGafVizCSjEQQoWOSp7BR_2HIsokA/exec',
   
   // Timeout cho request (ms)
   TIMEOUT: 30000,
@@ -16,26 +16,7 @@ const API_CONFIG = {
   MAX_RETRIES: 3
 };
 
-// Fallback data khi API không hoạt động
-const FALLBACK_DATA = {
-  packages: {
-    NonPT: [
-      { code: 'GYM001', sessions: 10, price: 1500000, type: 'Gym_NonPT' },
-      { code: 'GYM002', sessions: 20, price: 2500000, type: 'Gym_NonPT' },
-      { code: 'GYM003', sessions: 30, price: 3500000, type: 'Gym_NonPT' }
-    ],
-    PT: [
-      { code: 'PT1:1-001', sessions: 10, price: 5000000, type: 'Gym_PT' },
-      { code: 'PT1:1-002', sessions: 20, price: 9000000, type: 'Gym_PT' },
-      { code: 'PT2:1-001', sessions: 10, price: 3000000, type: 'Gym_PT' }
-    ]
-  },
-  ptList: [
-    { code: 'PT001', name: 'Nguyễn Văn A' },
-    { code: 'PT002', name: 'Trần Thị B' },
-    { code: 'PT003', name: 'Lê Văn C' }
-  ]
-};
+
 
 /**
  * Hàm gọi API đến backend GAS
@@ -48,10 +29,11 @@ async function callAPI(action, params = {}) {
   const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
   
   try {
+    // Dùng text/plain để tránh preflight OPTIONS request
     const response = await fetch(API_CONFIG.BASE_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain', // ⭐ QUAN TRỌNG: text/plain thay vì application/json
       },
       body: JSON.stringify({
         action: action,
@@ -69,9 +51,8 @@ async function callAPI(action, params = {}) {
     
     const data = await response.json();
     
-    // Kiểm tra lỗi từ backend
-    if (data.error) {
-      throw new Error(data.error);
+    if (!data.success) {
+      throw new Error(data.error || 'API returned error');
     }
     
     return data;
@@ -80,12 +61,10 @@ async function callAPI(action, params = {}) {
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      throw new Error('Request timeout. Vui lòng thử lại.');
+      throw new Error('Request timeout');
     }
     
-    // Log lỗi để debug
     console.error(`API Error (${action}):`, error);
-    
     throw error;
   }
 }
