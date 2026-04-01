@@ -7,7 +7,7 @@
 const API_CONFIG = {
   // URL của Google Apps Script Web App
   // Thay đổi URL này khi deploy backend
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbwnakkgERa6YE5zSSntedsQk2VTvD9fHf-rEK2cTwIl_w8rTH6lpbm0oHQSc4miDKQHAg/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbzQRxX_PrAGRVfM7KEo-vWumMFVIaX-1llkcvijv16LzTWrJgRzZ28VB9shzl27ClDJsQ/exec',
   
   // Timeout cho request (ms)
   TIMEOUT: 30000,
@@ -49,47 +49,41 @@ window.FALLBACK_DATA = FALLBACK_DATA;
  * @param {Object} params - Tham số gửi đi
  * @returns {Promise} - Promise với kết quả từ API
  */
-async function callAPI(action, params = {}) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
-  
+export async function callAPI(action, params = {}) {
   try {
-    // Dùng text/plain để tránh preflight OPTIONS request
-    const response = await fetch(API_CONFIG.BASE_URL, {
+    const payload = JSON.stringify({ action, params });
+
+    const response = await fetch(API_BASE_URL, {
       method: 'POST',
+      // mode: 'cors',                    // Có thể bỏ hoặc giữ
       headers: {
-        'Content-Type': 'text/plain', // ⭐ QUAN TRỌNG: text/plain thay vì application/json
+        'Content-Type': 'text/plain;charset=utf-8'   // ← RẤT QUAN TRỌNG: Tránh preflight
       },
-      body: JSON.stringify({
-        action: action,
-        params: params,
-        timestamp: new Date().toISOString()
-      }),
-      signal: controller.signal
+      body: payload
     });
-    
-    clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP Error: ${response.status}`);
     }
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.error || 'API returned error');
+
+    const text = await response.text();
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      throw new Error('Server trả về không phải JSON');
     }
-    
-    return data;
-    
+
+    if (result.success === true || result.status === 'success') {
+      return result.data || result;
+    } else {
+      throw new Error(result.error || result.message || 'Lỗi không xác định từ server');
+    }
   } catch (error) {
-    clearTimeout(timeoutId);
-    
-    if (error.name === 'AbortError') {
-      throw new Error('Request timeout');
+    console.error(`❌ API Failed [${action}]:`, error.message);
+    if (typeof window.showToast === 'function') {
+      window.showToast(`Không kết nối được server: ${error.message}`, 'error');
     }
-    
-    console.error(`API Error (${action}):`, error);
     throw error;
   }
 }
