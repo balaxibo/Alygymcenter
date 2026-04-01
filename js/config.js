@@ -7,7 +7,7 @@
 const API_CONFIG = {
   // URL của Google Apps Script Web App
   // Thay đổi URL này khi deploy backend
-  BASE_URL: 'https://script.google.com/macros/s/AKfycbztJtL3budhNOBIMeIEopWlag3y8p0L1PyY9rYOSccTXi8aAuT6VmYiU_jFOVWJ3kurZA/exec',
+  BASE_URL: 'https://script.google.com/macros/s/AKfycbwnakkgERa6YE5zSSntedsQk2VTvD9fHf-rEK2cTwIl_w8rTH6lpbm0oHQSc4miDKQHAg/exec',
   
   // Timeout cho request (ms)
   TIMEOUT: 30000,
@@ -15,6 +15,31 @@ const API_CONFIG = {
   // Số lần retry tối đa
   MAX_RETRIES: 3
 };
+
+// Fallback data khi API không hoạt động (dựa trên CSV structure)
+const FALLBACK_DATA = {
+  packages: {
+    NonPT: [
+      { code: 'Basic', sessions: 26, price: 200000, type: 'Gym_NonPT', name: 'Basic' },
+      { code: 'VIP1', sessions: 78, price: 600000, type: 'Gym_NonPT', name: 'VIP1' },
+      { code: 'VIP2', sessions: 156, price: 1200000, type: 'Gym_NonPT', name: 'VIP2' },
+      { code: 'Basic_Out', sessions: 26, price: 250000, type: 'Gym_NonPT', name: 'Basic_Out' },
+      { code: 'VIP1_Out', sessions: 78, price: 750000, type: 'Gym_NonPT', name: 'VIP1_Out' },
+      { code: 'VIP2_Out', sessions: 156, price: 1500000, type: 'Gym_NonPT', name: 'VIP2_Out' }
+    ],
+    PT: [
+      { code: 'PT1:1:10', sessions: 10, price: 2500000, type: 'Gym_PT', name: 'PT1:1 - 10 buổi' },
+      { code: 'PT1:1:20', sessions: 20, price: 4000000, type: 'Gym_PT', name: 'PT1:1 - 20 buổi' },
+      { code: 'PT1:1:30', sessions: 30, price: 6000000, type: 'Gym_PT', name: 'PT1:1 - 30 buổi' }
+    ]
+  },
+  ptList: [
+    { code: 'PT002', name: 'Quang Thành', phone: '' }
+  ]
+};
+
+// Make FALLBACK_DATA global
+window.FALLBACK_DATA = FALLBACK_DATA;
 
 
 
