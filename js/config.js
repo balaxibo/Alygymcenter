@@ -1,8 +1,10 @@
-// config.js - PHIÊN BẢN SẠCH, CHỈ DÙNG DỮ LIỆU THẬT TỪ GOOGLE SHEET
+/**
+ * config.js - PHIÊN BẢN TỐI ƯU CUỐI CÙNG - TẬP TRUNG XỬ LÝ CORS
+ */
 
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby7G2z1ff_4KLy3iXrwo5oHTXqxp0ghNXJERJ9tLZVn323SDQNB3TWnWtSxg9HBAntd/exec';
 
-// ==================== HÀM GỌI API (TỐI ƯU) ====================
+// ==================== HÀM GỌI API (TỐI ƯU CORS) ====================
 async function callAPI(action, params = {}) {
   try {
     console.log(`📡 Gọi API: ${action}`);
@@ -13,11 +15,15 @@ async function callAPI(action, params = {}) {
 
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
       body: formData
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
 
     const text = await response.text();
     const result = JSON.parse(text);
@@ -31,7 +37,7 @@ async function callAPI(action, params = {}) {
   } catch (error) {
     console.error(`❌ API Failed [${action}]:`, error.message);
     if (typeof window.showToast === 'function') {
-      window.showToast(`Lỗi kết nối server: ${error.message}`, 'error');
+      window.showToast(`Không kết nối được server. Kiểm tra backend GAS.`, 'error');
     }
     throw error;
   }
@@ -52,19 +58,21 @@ function showGlobalLoading(show, message = 'Đang tải...') {
         </div>`;
       document.body.appendChild(el);
     }
-  } else if (el) el.remove();
+  } else if (el) {
+    el.remove();
+  }
 }
 
 function showToast(message, type = 'info') {
   const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
   const toast = document.createElement('div');
-  toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:100000;padding:14px 20px;border-radius:8px;color:white;font-weight:600;box-shadow:0 10px 15px -3px rgb(0 0 0 / 0.3);background:${colors[type]||'#3b82f6'};`;
+  toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:100000;padding:14px 20px;border-radius:8px;color:white;font-weight:600;box-shadow:0 10px 15px -3px rgb(0 0 0 / 0.3);background:${colors[type] || '#3b82f6'};`;
   toast.textContent = message;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
 
-// Expose ra window
+// Expose tất cả ra window
 window.callAPI = callAPI;
 window.showGlobalLoading = showGlobalLoading;
 window.showToast = showToast;
