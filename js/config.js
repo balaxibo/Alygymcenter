@@ -118,7 +118,7 @@ function showToast(message, type = 'info') {
 window.showGlobalLoading = showGlobalLoading;
 window.showToast = showToast;
 
-async function callAPI(action, params = {}) {
+export async function callAPI(action, params = {}) {
   try {
     const payload = JSON.stringify({ action, params });
 
