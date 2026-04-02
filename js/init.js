@@ -10,37 +10,49 @@ let qrScanner = null;
 let pendingPackages = [];
 let currentPromotion = null;
 
-/async function loadInitialData() {
+/**
+ * Load dữ liệu ban đầu từ API
+ */
+async function loadData() {
   try {
-    // showGlobalLoading('Đang tải dữ liệu...');   ← XÓA HOẶC COMMENT DÒNG NÀY
-
-    const data = await window.callAPI('getInitialData');
-
-    window.packages = [
-      ...(data.allPackages?.NonPT || []),
-      ...(data.allPackages?.PT || [])
+    showGlobalLoading(true, 'Đang tải dữ liệu...');
+    
+    const response = await callAPI('getInitialData');
+    
+    if (response.success) {
+      packages = [
+        ...(Array.isArray(response.data?.allPackages?.NonPT) ? response.data.allPackages.NonPT : []),
+        ...(Array.isArray(response.data?.allPackages?.PT) ? response.data.allPackages.PT : [])
+      ];
+      ptList = response.data?.pt || [];
+      
+      updatePackageOptions();
+      updateRenewPackageOptions();
+      updatePTOptions();
+      
+      showToast('Tải dữ liệu thành công!', 'success');
+    } else {
+      throw new Error(response.error || 'Không thể tải dữ liệu');
+    }
+    
+  } catch (error) {
+    console.error('Lỗi tải dữ liệu:', error);
+    
+    // Sử dụng fallback data khi API không hoạt động
+    console.log('Sử dụng fallback data do API không khả dụng');
+    packages = [
+      ...window.FALLBACK_DATA.packages.NonPT,
+      ...window.FALLBACK_DATA.packages.PT
     ];
-
-    window.ptList = data.pt || [];
-    window.__allStudentsCache = data.students || [];
-
-    console.log('✅ Dữ liệu đã tải thành công');
-
-    // Gọi các hàm cập nhật UI
-    if (typeof window.updatePackageOptions === 'function') window.updatePackageOptions();
-    if (typeof window.updatePTOptions === 'function') window.updatePTOptions();
-    // ... các hàm khác
-
-  } catch (err) {
-    console.error('Lỗi tải dữ liệu:', err);
-    window.showToast('Không thể tải dữ liệu từ server. Sử dụng dữ liệu dự phòng.', 'error');
+    ptList = window.FALLBACK_DATA.ptList;
     
-    // Fallback
-    window.packages = window.packages || [];
-    window.ptList = window.ptList || [];
-    window.__allStudentsCache = window.__allStudentsCache || [];
+    updatePackageOptions();
+    updateRenewPackageOptions();
+    updatePTOptions();
     
-    if (typeof window.updatePackageOptions === 'function') window.updatePackageOptions();
+    showToast('API không khả dụng, đang sử dụng dữ liệu mẫu', 'warning');
+  } finally {
+    showGlobalLoading(false);
   }
 }
 
