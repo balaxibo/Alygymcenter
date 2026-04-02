@@ -10,47 +10,43 @@ let qrScanner = null;
 let pendingPackages = [];
 let currentPromotion = null;
 
-/**
- * Load dữ liệu ban đầu từ API
- */
 async function loadData() {
   try {
-    showGlobalLoading(true, 'Đang tải dữ liệu...');
+    showGlobalLoading(true, 'Đang tải dữ liệu từ Google Sheet...');
     
-    const response = await callAPI('getInitialData');
+    const data = await callAPI('getInitialData');
     
-    if (response.success) {
-      packages = [
-        ...(Array.isArray(response.data?.allPackages?.NonPT) ? response.data.allPackages.NonPT : []),
-        ...(Array.isArray(response.data?.allPackages?.PT) ? response.data.allPackages.PT : [])
-      ];
-      ptList = response.data?.pt || [];
-      
-      updatePackageOptions();
-      updateRenewPackageOptions();
-      updatePTOptions();
-      
-      showToast('Tải dữ liệu thành công!', 'success');
-    } else {
-      throw new Error(response.error || 'Không thể tải dữ liệu');
-    }
-    
-  } catch (error) {
-    console.error('Lỗi tải dữ liệu:', error);
-    
-    // Sử dụng fallback data khi API không hoạt động
-    console.log('Sử dụng fallback data do API không khả dụng');
+    // DÙNG DỮ LIỆU THẬT TỪ GOOGLE SHEET
     packages = [
-      ...window.FALLBACK_DATA.packages.NonPT,
-      ...window.FALLBACK_DATA.packages.PT
+      ...(Array.isArray(data?.allPackages?.NonPT) ? data.allPackages.NonPT : []),
+      ...(Array.isArray(data?.allPackages?.PT) ? data.allPackages.PT : [])
     ];
-    ptList = window.FALLBACK_DATA.ptList;
     
+    ptList = Array.isArray(data?.pt) ? data.pt : [];
+    
+    console.log(`✅ Tải thành công: ${packages.length} gói | ${ptList.length} PT`);
+
     updatePackageOptions();
     updateRenewPackageOptions();
     updatePTOptions();
     
-    showToast('API không khả dụng, đang sử dụng dữ liệu mẫu', 'warning');
+    showToast('Đã tải dữ liệu thật từ Google Sheet!', 'success');
+    
+  } catch (error) {
+    console.error('Lỗi tải dữ liệu:', error);
+    showToast('Không kết nối được server, dùng dữ liệu mẫu tạm thời', 'warning');
+    
+    // Fallback (chỉ dùng khi thật sự lỗi)
+    packages = window.FALLBACK_DATA ? [
+      ...window.FALLBACK_DATA.packages.NonPT,
+      ...window.FALLBACK_DATA.packages.PT
+    ] : [];
+    
+    ptList = window.FALLBACK_DATA?.ptList || [];
+    
+    updatePackageOptions();
+    updateRenewPackageOptions();
+    updatePTOptions();
   } finally {
     showGlobalLoading(false);
   }
