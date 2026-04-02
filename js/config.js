@@ -43,23 +43,15 @@ window.FALLBACK_DATA = FALLBACK_DATA;
 
 
 
-/**
- * Hàm gọi API đến backend GAS
- * @param {string} action - Tên action cần gọi
- * @param {Object} params - Tham số gửi đi
- * @returns {Promise} - Promise với kết quả từ API
- */
-export async function callAPI(action, params = {}) {
+// === HÀM GỌI API (KHÔNG DÙNG export) ===
+async function callAPI(action, params = {}) {
   try {
-    const payload = JSON.stringify({ action, params });
-
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
-      // mode: 'cors',                    // Có thể bỏ hoặc giữ
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8'   // ← RẤT QUAN TRỌNG: Tránh preflight
+        'Content-Type': 'text/plain;charset=utf-8'
       },
-      body: payload
+      body: JSON.stringify({ action, params })
     });
 
     if (!response.ok) {
@@ -67,26 +59,26 @@ export async function callAPI(action, params = {}) {
     }
 
     const text = await response.text();
-    let result;
-    try {
-      result = JSON.parse(text);
-    } catch (e) {
-      throw new Error('Server trả về không phải JSON');
-    }
+    const result = JSON.parse(text);
 
     if (result.success === true || result.status === 'success') {
       return result.data || result;
     } else {
-      throw new Error(result.error || result.message || 'Lỗi không xác định từ server');
+      throw new Error(result.error || result.message || 'Lỗi server');
     }
   } catch (error) {
-    console.error(`❌ API Failed [${action}]:`, error.message);
+    console.error(`API Call Failed [${action}]:`, error);
     if (typeof window.showToast === 'function') {
-      window.showToast(`Không kết nối được server: ${error.message}`, 'error');
+      window.showToast(`Lỗi kết nối: ${error.message}`, 'error');
     }
     throw error;
   }
 }
+
+// Expose ra global để các file khác dùng
+window.callAPI = callAPI;
+
+console.log('✅ Frontend ALY GYM initialized - API ready');
 
 /**
  * Hiển thị toast notification
