@@ -4,7 +4,7 @@
  */
 
 // Cấu hình API
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby7G2z1ff_4KLy3iXrwo5oHTXqxp0ghNXJERJ9tLZVn323SDQNB3TWnWtSxg9HBAntd/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyhpaTWJvBskJI1M0gIpf-LaWvKOBq8YmRVn3gSS9lyLECR4UW_tIo7MgwsyTCyJHPffQ/exec';
   // Timeout cho request (ms)
   TIMEOUT: 30000,
   
@@ -114,17 +114,22 @@ function showToast(message, type = 'info') {
 window.showGlobalLoading = showGlobalLoading;
 window.showToast = showToast;
 
-// ==================== HÀM GỌI API ====================
+// ==================== HÀM GỌI API TỐI ƯU (KHÔNG PREFIGHT) ====================
 async function callAPI(action, params = {}) {
   try {
     console.log(`📡 Gọi API: ${action}`);
 
+    // Dùng form-urlencoded → Browser KHÔNG gửi OPTIONS (simple request)
+    const formData = new URLSearchParams();
+    formData.append('action', action);
+    formData.append('payload', JSON.stringify(params));   // backend sẽ parse lại
+
     const response = await fetch(API_BASE_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: JSON.stringify({ action, params })
+      body: formData
     });
 
     if (!response.ok) {
@@ -148,6 +153,8 @@ async function callAPI(action, params = {}) {
     throw error;
   }
 }
+
+window.callAPI = callAPI;
 
 /**
  * Hiển thị toast notification
