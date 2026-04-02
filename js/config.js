@@ -5,25 +5,28 @@
 const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbztNpEjyUAn9tcZCmEsvZFROoriIS8r3fzzQDLmJFz0mBErQOg8MZn-oDRe2gZqhHVCzQ/exec';
 
 // ==================== HÀM GỌI API (TỐI ƯU CORS) ====================
+// Sử dụng proxy đáng tin cậy (corsproxy.io)
 async function callAPI(action, params = {}) {
   try {
     console.log(`📡 Gọi API: ${action}`);
 
-    const formData = new URLSearchParams();
-    formData.append('action', action);
-    formData.append('payload', JSON.stringify(params));
+    const payload = JSON.stringify({ action, params });
 
-    const response = await fetch(API_BASE_URL, {
+    // Dùng proxy để bypass CORS
+    const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(API_BASE_URL);
+
+    const response = await fetch(proxyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: formData
+      body: new URLSearchParams({
+        action: action,
+        payload: payload
+      })
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const text = await response.text();
     const result = JSON.parse(text);
@@ -37,11 +40,13 @@ async function callAPI(action, params = {}) {
   } catch (error) {
     console.error(`❌ API Failed [${action}]:`, error.message);
     if (typeof window.showToast === 'function') {
-      window.showToast(`Không kết nối được server. Kiểm tra backend GAS.`, 'error');
+      window.showToast(`Lỗi kết nối: ${error.message}`, 'error');
     }
     throw error;
   }
 }
+
+window.callAPI = callAPI;
 
 // ==================== GLOBAL HELPERS ====================
 function showGlobalLoading(show, message = 'Đang tải...') {
