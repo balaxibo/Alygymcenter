@@ -2,7 +2,7 @@
  * config.js - PHIÊN BẢN TỐI ƯU CUỐI CÙNG - TẬP TRUNG XỬ LÝ CORS
  */
 
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbw_xEY77rockadk5EPJ59zBiDDCmFTfUpEgfnaYAkJlT-DEGtOwUEcPdMVq4FLiV2q2oA/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbztNpEjyUAn9tcZCmEsvZFROoriIS8r3fzzQDLmJFz0mBErQOg8MZn-oDRe2gZqhHVCzQ/exec';
 
 // ==================== HÀM GỌI API (TỐI ƯU CORS) ====================
 async function callAPI(action, params = {}) {
