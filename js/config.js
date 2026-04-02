@@ -43,15 +43,92 @@ window.FALLBACK_DATA = FALLBACK_DATA;
 
 
 
-// === HÀM GỌI API (KHÔNG DÙNG export) ===
+/**
+ * Hàm gọi API đến backend GAS
+ * @param {string} action - Tên action cần gọi
+ * @param {Object} params - Tham số gửi đi
+ * @returns {Promise} - Promise với kết quả từ API
+ */
+/**
+ * Hiển thị/ẩn trạng thái loading toàn màn hình
+ * @param {boolean} show - Hiển thị/ẩn
+ * @param {string} message - Thông báo
+ */
+function showGlobalLoading(show, message = 'Đang xử lý...') {
+  let loadingElement = document.getElementById('globalLoading');
+  
+  if (show) {
+    if (!loadingElement) {
+      loadingElement = document.createElement('div');
+      loadingElement.id = 'globalLoading';
+      loadingElement.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+                    justify-content: center; z-index: 9999;">
+          <div style="background: white; padding: 30px; border-radius: 10px; 
+                      text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div class="loading-spinner" style="margin: 0 auto 15px;"></div>
+            <p style="margin: 0; font-weight: bold;">${message}</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(loadingElement);
+    }
+  } else {
+    if (loadingElement) {
+      loadingElement.remove();
+    }
+  }
+}
+
+/**
+ * Hiển thị thông báo toast
+ * @param {string} message - Thông báo
+ * @param {string} type - Loại thông báo (success, error, warning, info)
+ */
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed; top: 20px; right: 20px; z-index: 10000;
+    padding: 15px 20px; border-radius: 5px; color: white;
+    font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease; max-width: 300px;
+  `;
+  
+  // Set màu theo type
+  const colors = {
+    success: '#28a745',
+    error: '#dc3545',
+    warning: '#ffc107',
+    info: '#17a2b8'
+  };
+  toast.style.background = colors[type] || colors.info;
+  toast.textContent = message;
+  
+  document.body.appendChild(toast);
+  
+  // Auto remove sau 3 giây
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Make functions global
+window.showGlobalLoading = showGlobalLoading;
+window.showToast = showToast;
+
 async function callAPI(action, params = {}) {
   try {
-    const response = await fetch(API_BASE_URL, {
+    const payload = JSON.stringify({ action, params });
+
+    const response = await fetch(API_CONFIG.BASE_URL, {
       method: 'POST',
+      // mode: 'cors',                    // Có thể bỏ hoặc giữ
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
+        'Content-Type': 'text/plain;charset=utf-8'   // ← RẤT QUAN TRỌNG: Tránh preflight
       },
-      body: JSON.stringify({ action, params })
+      body: payload
     });
 
     if (!response.ok) {
@@ -59,26 +136,26 @@ async function callAPI(action, params = {}) {
     }
 
     const text = await response.text();
-    const result = JSON.parse(text);
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      throw new Error('Server trả về không phải JSON');
+    }
 
     if (result.success === true || result.status === 'success') {
       return result.data || result;
     } else {
-      throw new Error(result.error || result.message || 'Lỗi server');
+      throw new Error(result.error || result.message || 'Lỗi không xác định từ server');
     }
   } catch (error) {
-    console.error(`API Call Failed [${action}]:`, error);
+    console.error(`❌ API Failed [${action}]:`, error.message);
     if (typeof window.showToast === 'function') {
-      window.showToast(`Lỗi kết nối: ${error.message}`, 'error');
+      window.showToast(`Không kết nối được server: ${error.message}`, 'error');
     }
     throw error;
   }
 }
-
-// Expose ra global để các file khác dùng
-window.callAPI = callAPI;
-
-console.log('✅ Frontend ALY GYM initialized - API ready');
 
 /**
  * Hiển thị toast notification
