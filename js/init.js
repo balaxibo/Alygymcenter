@@ -12,41 +12,29 @@ let currentPromotion = null;
 
 async function loadData() {
   try {
-    showGlobalLoading(true, 'Đang tải dữ liệu từ Google Sheet...');
-    
+    showGlobalLoading(true, 'Đang tải dữ liệu thật từ Google Sheet...');
+
     const data = await callAPI('getInitialData');
-    
-    // DÙNG DỮ LIỆU THẬT TỪ GOOGLE SHEET
+
+    // DÙNG DỮ LIỆU THẬT TỪ SHEET DS_Goi và DanhSach_PT
     packages = [
       ...(Array.isArray(data?.allPackages?.NonPT) ? data.allPackages.NonPT : []),
       ...(Array.isArray(data?.allPackages?.PT) ? data.allPackages.PT : [])
     ];
-    
+
     ptList = Array.isArray(data?.pt) ? data.pt : [];
-    
-    console.log(`✅ Tải thành công: ${packages.length} gói | ${ptList.length} PT`);
+
+    console.log(`✅ Tải thành công từ Google Sheet: ${packages.length} gói | ${ptList.length} PT`);
 
     updatePackageOptions();
     updateRenewPackageOptions();
     updatePTOptions();
-    
+
     showToast('Đã tải dữ liệu thật từ Google Sheet!', 'success');
-    
+
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error);
-    showToast('Không kết nối được server, dùng dữ liệu mẫu tạm thời', 'warning');
-    
-    // Fallback (chỉ dùng khi thật sự lỗi)
-    packages = window.FALLBACK_DATA ? [
-      ...window.FALLBACK_DATA.packages.NonPT,
-      ...window.FALLBACK_DATA.packages.PT
-    ] : [];
-    
-    ptList = window.FALLBACK_DATA?.ptList || [];
-    
-    updatePackageOptions();
-    updateRenewPackageOptions();
-    updatePTOptions();
+    showToast('Không thể kết nối Google Sheet. Vui lòng kiểm tra backend.', 'error');
   } finally {
     showGlobalLoading(false);
   }
