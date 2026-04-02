@@ -14,15 +14,34 @@ async function loadData() {
   try {
     showGlobalLoading(true, 'Đang tải dữ liệu thật từ Google Sheet...');
 
-    const data = await callAPI('getInitialData');
+    const SPREADSHEET_ID = '12m5QkQ73vu_W4WyWR31Lxk5pflSoRuwKioycbGkE_Kc';
 
-    // DÙNG DỮ LIỆU THẬT TỪ SHEET DS_Goi và DanhSach_PT
-    packages = [
-      ...(Array.isArray(data?.allPackages?.NonPT) ? data.allPackages.NonPT : []),
-      ...(Array.isArray(data?.allPackages?.PT) ? data.allPackages.PT : [])
-    ];
+    // Lấy Packages từ sheet DS_Goi
+    const pkgResponse = await fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=DS_Goi`);
+    const pkgText = await pkgResponse.text();
+    const pkgData = JSON.parse(pkgText.substring(47).slice(0, -2)); // Google trả về JSONP
 
-    ptList = Array.isArray(data?.pt) ? data.pt : [];
+    const packagesRaw = pkgData.table.rows.map(row => ({
+      code: row.c[3] ? row.c[3].v : '',           // Mã gói (cột D)
+      sessions: row.c[4] ? row.c[4].v : 0,        // Số buổi
+      price: row.c[5] ? Number(String(row.c[5].v).replace(/[^0-9]/g, '')) : 0,
+      type: row.c[1] ? row.c[1].v : 'Gym_NonPT',  // Hình thức tập
+      name: row.c[2] ? row.c[2].v : ''
+    }));
+
+    // Lấy PT List từ sheet DanhSach_PT
+    const ptResponse = await fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=DanhSach_PT`);
+    const ptText = await ptResponse.text();
+    const ptData = JSON.parse(ptText.substring(47).slice(0, -2));
+
+    const ptListRaw = ptData.table.rows.map(row => ({
+      code: row.c[1] ? row.c[1].v : '',
+      name: row.c[2] ? row.c[2].v : ''
+    })).filter(pt => pt.code && pt.name);
+
+    // Gán dữ liệu thật
+    packages = packagesRaw;
+    ptList = ptListRaw;
 
     console.log(`✅ Tải thành công từ Google Sheet: ${packages.length} gói | ${ptList.length} PT`);
 
@@ -33,8 +52,8 @@ async function loadData() {
     showToast('Đã tải dữ liệu thật từ Google Sheet!', 'success');
 
   } catch (error) {
-    console.error('Lỗi tải dữ liệu:', error);
-    showToast('Không thể kết nối Google Sheet. Vui lòng kiểm tra backend.', 'error');
+    console.error('Lỗi tải dữ liệu trực tiếp từ Sheet:', error);
+    showToast('Không thể tải dữ liệu từ Google Sheet', 'error');
   } finally {
     showGlobalLoading(false);
   }
